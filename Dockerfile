@@ -7,18 +7,39 @@ ENV PATH $PATH:$GOROOT/bin:$GOPATH/bin
 
 WORKDIR /gopath/src/github.com/gogs/gogs/
 
-RUN apk --no-cache add go redis sqlite openssh sudo supervisor git \
-		bash linux-pam build-base linux-pam-dev shadow && \
+RUN apk --no-cache add \
+		bash \
+		build-base \
+		build-deps \
+		ca-certificates \
+		curl \
+		git \
+		go \
+		linux-pam \
+		linux-pam-dev \
+		openssh \
+		redis \
+		shadow \
+		socat \
+		sqlite \
+		sudo \
+		supervisor \
+		tzdata \
+		&& \
+	apk --no-cache add --virtual build-deps \
+		build-base \
+		linux-pam-dev \
+		&& \
 	git clone --depth=1 https://github.com/gogs/gogs.git \
 		/gopath/src/github.com/gogs/gogs && \
-	go get -v -tags "sqlite redis memcache cert pam" && \
-	go build -tags "sqlite redis memcache cert pam" && \
+	make build TAGS="sqlite redis memcache cert pam" && \
+	apk del build-deps && \
 	mkdir /app/ && \
 	mv /gopath/src/github.com/gogs/gogs/ /app/gogs/ && \
-	useradd --shell /bin/bash --system --comment gogs git && \
-	apk --no-cache del build-base linux-pam-dev shadow && \
 	rm -rf "$GOPATH" /var/cache/apk/*
 
+RUN adduser -G git -H -D -g 'Gogs Git User' git -h /data/git -s /bin/bash && \
+	usermod -p '*' git && passwd -u git
 
 WORKDIR /app/gogs/
 
@@ -26,10 +47,8 @@ WORKDIR /app/gogs/
 RUN echo "export VISIBLE=now" >> /etc/profile && \
 	echo "PermitUserEnvironment yes" >> /etc/ssh/sshd_config
 
-# Setup server keys on startup
-RUN echo "HostKey /data/ssh/ssh_host_rsa_key" >> /etc/ssh/sshd_config && \
-	echo "HostKey /data/ssh/ssh_host_dsa_key" >> /etc/ssh/sshd_config && \
-	echo "HostKey /data/ssh/ssh_host_ed25519_key" >> /etc/ssh/sshd_config
+# Setup ssh
+COPY config/sshd_config /etc/ssh/sshd_config
 
 # Prepare data
 ENV GOGS_CUSTOM /data/gogs
