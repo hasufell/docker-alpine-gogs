@@ -35,6 +35,7 @@ RUN apk --no-cache add \
 	mv /gopath/src/github.com/gogs/gogs/ /app/gogs/ && \
 	rm -rf "$GOPATH" /var/cache/apk/*
 
+RUN addgroup -S git
 RUN adduser -G git -H -D -g 'Gogs Git User' git -h /data/git -s /bin/bash && \
 	usermod -p '*' git && passwd -u git
 
