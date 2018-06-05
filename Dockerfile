@@ -9,14 +9,11 @@ WORKDIR /gopath/src/github.com/gogs/gogs/
 
 RUN apk --no-cache add \
 		bash \
-		build-base \
-		build-deps \
 		ca-certificates \
 		curl \
 		git \
 		go \
 		linux-pam \
-		linux-pam-dev \
 		openssh \
 		redis \
 		shadow \
