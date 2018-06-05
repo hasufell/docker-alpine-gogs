@@ -1,24 +1,21 @@
-FROM       alpine:3.3
+FROM       alpine:3.7
 MAINTAINER Julian Ospald <hasufell@posteo.de>
 
 
 ENV GOPATH /gopath
 ENV PATH $PATH:$GOROOT/bin:$GOPATH/bin
 
-WORKDIR /gopath/src/github.com/gogits/gogs/
+WORKDIR /gopath/src/github.com/gogs/gogs/
 
-RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" \
-		>> /etc/apk/repositories && \
-	apk --no-cache add go redis sqlite openssh sudo supervisor git \
-		bash linux-pam build-base linux-pam-dev shadow@testing && \
-	git clone --depth=1 https://github.com/gogits/gogs.git \
-		/gopath/src/github.com/gogits/gogs && \
+RUN apk --no-cache add go redis sqlite openssh sudo supervisor git \
+		bash linux-pam build-base linux-pam-dev shadow && \
+	git clone --depth=1 https://github.com/gogs/gogs.git \
+		/gopath/src/github.com/gogs/gogs && \
 	go get -v -tags "sqlite redis memcache cert pam" && \
 	go build -tags "sqlite redis memcache cert pam" && \
 	mkdir /app/ && \
-	mv /gopath/src/github.com/gogits/gogs/ /app/gogs/ && \
-	groupadd git && \
-	useradd --shell /bin/bash --system --comment gogits git && \
+	mv /gopath/src/github.com/gogs/gogs/ /app/gogs/ && \
+	useradd --shell /bin/bash --system --comment gogs git && \
 	apk --no-cache del build-base linux-pam-dev shadow && \
 	rm -rf "$GOPATH" /var/cache/apk/*
 
